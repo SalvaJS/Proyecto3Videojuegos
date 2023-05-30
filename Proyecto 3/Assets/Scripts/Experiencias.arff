@@ -1,0 +1,5 @@
+@relation FuncionCuadratica
+@attribute  distancia	numeric
+@attribute	vCoche	numeric
+@attribute	vBala	numeric
+@data 
