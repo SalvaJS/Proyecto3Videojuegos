@@ -122,7 +122,7 @@ public class JugadorScript : MonoBehaviour
         transform.Rotate(0, mouseX * velMouse, 0); // Rotación del personaje en el eje y.
         // Rotación de la cámara en el eje x:
         rotAcumX += mouseY;
-        rotAcumX = Mathf.Clamp(rotAcumX, -80 / velMouse, 90 / velMouse); // Limitación de la cámara en el eje x.
+        rotAcumX = Mathf.Clamp(rotAcumX, -60 / velMouse, 60 / velMouse); // Limitación de la cámara en el eje x.
         ojos.transform.localRotation = Quaternion.Euler(rotAcumX * velMouse, 0, 0); // Giro de la cámara en el eje x.
     }
     /*
