@@ -8,23 +8,14 @@ public class GuiaScript : MonoBehaviour
 {
     public GameObject helicoptero;
     private NavMeshAgent agente;
-    public GameObject[] destinos;
-    private int posDestino;
-    private GameObject destinoAct;
-    public enum Estado {BAJOHELICOPTERO, IRDESTINOS}
+    public enum Estado {BAJOHELICOPTERO, SEGUIRJUGADOR}
     public Estado estado;
-    public bool accionCaja;
-    public bool ataque;
-    public GameObject coche;
+    public GameObject jugador;
     void Start()
     {
         agente = GetComponent<NavMeshAgent>();
         agente.enabled = false;
         estado = Estado.BAJOHELICOPTERO;
-        posDestino = 0;
-        destinoAct = destinos[posDestino];
-        accionCaja = false;
-        ataque = false;
     }
 
     void Update()
@@ -35,47 +26,23 @@ public class GuiaScript : MonoBehaviour
             case Estado.BAJOHELICOPTERO:
                 BajoHelicoptero();
                 break;
-            case Estado.IRDESTINOS:
-                IrDestinos();
-                // agente.destination = new Vector3(destinoAct.transform.position.x, 0, destinoAct.transform.position.z); // para seguir al coche.
+            case Estado.SEGUIRJUGADOR:
+                SeguirJugador();
                 break;
         }
     }
-    private void IrDestinos()
+    private void SeguirJugador()
     {
-        // agente.destination = destinoAct.transform.position;
-        //print(accionCaja);
-        if(agente.remainingDistance <= agente.stoppingDistance && (posDestino == 0 || posDestino == 1))
-        {
-            accionCaja = true;
-        }
-        if(agente.remainingDistance <= agente.stoppingDistance && posDestino == 2)
-        {
-            ataque = true;
-        }
-        if(posDestino == 3)
-        {
-            GetComponent<NavMeshAgent>().speed = destinoAct.GetComponent<Rigidbody>().velocity.magnitude;
-            agente.destination = new Vector3(destinoAct.transform.position.x, 5, destinoAct.transform.position.z); // para seguir al coche.
-            if (Vector3.Distance(transform.position, coche.transform.position) <= 5) helicoptero.GetComponent<HelicopteroScript>().cercaCoche = true;
-        }
+        agente.destination = new Vector3(jugador.transform.position.x, 0, jugador.transform.position.z);
+        agente.speed = jugador.GetComponent<Rigidbody>().velocity.magnitude;
     }
     private void BajoHelicoptero()
     {
         transform.position = new Vector3(helicoptero.transform.position.x, 0, helicoptero.transform.position.z);
     }
-    public void CambiarAIrDestinos()
+    public void CambiarASeguirJugador()
     {
         agente.enabled = true;
-        agente.destination = destinoAct.transform.position; // Lo pongo aquí porque me entra en el if de arriba.
-        estado = Estado.IRDESTINOS;
-    }
-    public void SiguienteDestino()
-    {
-        accionCaja = false;
-        posDestino++;
-        if (posDestino == 4) posDestino = 0;
-        destinoAct = destinos[posDestino];
-        agente.destination = destinoAct.transform.position; // Lo pongo aquí porque me entra en el if de arriba.
+        estado = Estado.SEGUIRJUGADOR;
     }
 }

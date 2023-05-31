@@ -14,10 +14,11 @@ using java.util;
 using weka.classifiers.functions;
 using weka.classifiers;
 using weka.core.converters;
+using TMPro;
 
 public class HelicopteroScript : MonoBehaviour
 {
-    public enum Estado {ATERRIZADO, DESPEGAR, SEGUIRGUIA, ESQUIVAR, ATACAR }
+    public enum Estado {ATERRIZADO, DESPEGAR, ESQUIVAR, ATACAR }
     public Estado estado;
     private const float VELVERT = 0.2f;
     private const float VELHOR = 100f;
@@ -47,7 +48,9 @@ public class HelicopteroScript : MonoBehaviour
     weka.core.Instances casosEntrenamiento;
     public bool cercaCoche;
 
-    private bool paraSubir;
+    public GameObject jugador;
+    public GameObject enemigo;
+    public TMP_Text conversación;
     void Start()
     {
         estado = Estado.ATERRIZADO;
@@ -71,7 +74,6 @@ public class HelicopteroScript : MonoBehaviour
 
 
         cercaCoche = false;
-        paraSubir = false;
     }
     private void FixedUpdate()
     {
@@ -79,27 +81,38 @@ public class HelicopteroScript : MonoBehaviour
         switch (estado)                         // ESTADOS SIGUIENTES:
         {
             case Estado.ATERRIZADO:
+                Aterrizado();
                 break;
             case Estado.DESPEGAR:               // SEGUIRGUIA
                 Despegar();
                 break;
-            case Estado.SEGUIRGUIA:             // ESQUIVAR
+            case Estado.ATACAR:
                 SeguirGuia();
+                Atacar();
                 break;
             case Estado.ESQUIVAR:               // SEGUIRGUIA
                 Esquivar();
                 break;
-            case Estado.ATACAR:
-                Atacar();
-                break;
+            
+        }
+    }
+    private void Aterrizado()
+    {
+        EnemigoScript sEnemigo = enemigo.GetComponent<EnemigoScript>();
+        if(sEnemigo.respuestaEnemigo.Contains("ME LAS PAGARÁS"))
+        {
+            estado = Estado.DESPEGAR;
         }
     }
     private void Despegar()
     {
-        if (transform.position.y >= alturaDeseada - 1)
+        AlcanzarAltura(ALTURABASE, VELVERT);
+        if (transform.position.y >= alturaDeseada - 1
+            && Vector3.Distance(new Vector3(transform.position.x, jugador.transform.position.y, transform.position.z), jugador.transform.position) > 10)
         {
-            estado = Estado.SEGUIRGUIA;
-            guia.GetComponent<GuiaScript>().CambiarAIrDestinos();
+            estado = Estado.ATACAR;
+            StartCoroutine("RutinaAtaque");
+            guia.GetComponent<GuiaScript>().CambiarASeguirJugador();
         }
     }
     // Método para hacer que el helicóptero alcance una altura determinada, manejando la variable alturaDeseada.
@@ -178,15 +191,15 @@ public class HelicopteroScript : MonoBehaviour
         {
             distMontObtenida = false;
         }
+        AlcanzarAltura(ALTURABASE, VELVERT);
         AlcanzarPosicion(guia, VELHOR);
-
     }
     private void Esquivar()
     {
         // Si dejamos de detectar el obstáculo lateral, significa que estamos a más altura. Por lo tanto, cambiamos a SEGUIRGUIA.
         if (!ObstaculoLateralDetectado())
         {
-            estado = Estado.SEGUIRGUIA;
+            estado = Estado.ATACAR;
             t = Time.time;
             return;
         }
@@ -238,7 +251,8 @@ public class HelicopteroScript : MonoBehaviour
         bool obstaculo = false;
         if (Sensores())
         {
-            if (detectSens[0].collider.gameObject.CompareTag("edificio"))
+            if (detectSens[0].collider.gameObject != null
+                && detectSens[0].collider.gameObject.CompareTag("edificio"))
             {
                 obstaculo = true;
             }
@@ -374,9 +388,9 @@ public class HelicopteroScript : MonoBehaviour
         print("RUTINA ATAQUE");
         print("CERCA COCHE: " + cercaCoche);
         //Esperamos hasta que la variable sea true
-        yield return new WaitUntil(() => cercaCoche == true);
+        yield return new WaitForSeconds(5);
         //Disparamos una bala cada 3 segundos
-        while (cercaCoche)
+        while (true)
         {
             //Creamos el caso de prueba
             Instance casoPrueba = new Instance(casosEntrenamiento.numAttributes());

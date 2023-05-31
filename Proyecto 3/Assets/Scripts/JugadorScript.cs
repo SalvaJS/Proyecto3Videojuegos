@@ -22,8 +22,8 @@ public class JugadorScript : MonoBehaviour
 
     private RaycastHit hit;
 
-    private enum ESTADO {MOVIMIENTO, CONVERSACION}
-    private ESTADO estado;
+    public enum ESTADO {MOVIMIENTO, CONVERSACION}
+    public ESTADO estado;
 
     void Start()
     {
@@ -54,8 +54,9 @@ public class JugadorScript : MonoBehaviour
             && Vector3.Distance(transform.position, hit.collider.gameObject.transform.position) < 5
             && Input.GetKeyDown(KeyCode.E))
         {
-            hit.collider.gameObject.GetComponent<EnemigoScript>().conversar = true;
             estado = ESTADO.CONVERSACION;
+            hit.collider.gameObject.GetComponent<EnemigoScript>().conversar = true;
+            PararPersonaje();
             return;
         }
         // Movimiento del jugador:
@@ -175,5 +176,13 @@ public class JugadorScript : MonoBehaviour
         bool deteccion = Physics.Raycast(ojos.transform.position, ojos.transform.forward, out hit);
         Debug.DrawRay(ojos.transform.position, ojos.transform.forward * 10, Color.red);
         return deteccion;
+    }
+    // Método para que el personaje cambie todos los bool a false de las animaciones.
+    private void PararPersonaje()
+    {
+        foreach(AnimatorControllerParameter p in animator.parameters)
+        {
+            animator.SetBool(p.name, false);
+        }
     }
 }

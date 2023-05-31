@@ -30,6 +30,8 @@ public class EnemigoScript : MonoBehaviour
     public Button boton;
     private OpenAIAPI api;
     private List<ChatMessage> mensajes;
+    private bool terminarConversacion;
+    public string respuestaEnemigo;
 
     public bool conversar;
     void Start()
@@ -43,6 +45,8 @@ public class EnemigoScript : MonoBehaviour
         aPosAct = -1;
         conversar = false;
         canvas.enabled = false;
+        terminarConversacion = false;
+        respuestaEnemigo = "";
     }
     void Update()
     {
@@ -68,14 +72,7 @@ public class EnemigoScript : MonoBehaviour
             estado = ESTADO.MIRARJUGADOR;
             animator.SetBool("andar", false);
             agente.destination = transform.position;
-            int aPosAnt = aPosAct;
-            AudioClip a = null;
-            while(aPosAnt == aPosAct) // Escoger un audio diferente al anterior.
-            {
-                aPosAct = Random.Range(0, aEncuentroJugador.Length);
-                a = aEncuentroJugador[aPosAct];
-            }
-            audio.PlayOneShot(a);
+            SonidoEnemigo();
             return;
         }
         if(agente.remainingDistance <= agente.stoppingDistance && !cambiandoPos)
@@ -117,7 +114,7 @@ public class EnemigoScript : MonoBehaviour
         {
             estado = ESTADO.CONVERSAR;
             canvas.enabled = true;
-            api = new OpenAIAPI("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");
+            api = new OpenAIAPI("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");
             InicializarConversacion();
             boton.onClick.AddListener(() => ObtenerRespuesta());
             return;
@@ -129,25 +126,26 @@ public class EnemigoScript : MonoBehaviour
         mensajes = new List<ChatMessage> {    new ChatMessage(ChatMessageRole.System,
 
 
-      //Describir quien es el NPC que dialoga con el jugador, y como es su personalidad con adjetivos. Diga sus limitaciones.
+      // Personalidad NPC
       "Usted se llama Paco y es el jefe de una mafia muy poderosa de España llamada EZDC. Solo sabe hablar español. Su personalidad es muy agresiva e " +
       "intentará cerrar conversación lo antes posible si no consigue ningún beneficio del jugador. La persona que hablará con usted es el jugador," +
       "que, obviamente, usted no sabrá su nombre. Usted tiene secuestrado al hijo de ese jugador. En primer lugar debe preguntar quién es." +
       
-      //Describir el lugar donde se encuentra el NPC y los lugares de los que tiene que hablar con el jugador
+      // Localización y herramientas
       "Usted se encuentra en España. A su lado tiene un helicoptero que será su arma en caso de tener que utilizarla."+
       
-      //Comportamiento ante situaciones normales incluidos casos especiales 
+      //Comportamiento ante situaciones normales incluidos casos especiales.
       "El jugador le hará preguntas. Usted no tiene prohibido decir su nombre ni su mafia ya que es conocido y no es secreto, por lo tanto, si el jugador " +
       "le pregunta quién es, puede presentarse. Como usted tiene secuestrado a su hijo, él le preguntará que donde se encuentra y que se lo devuelva." +
-      "Usted debe negarse en todo momento. Usted le pedirá que si quiere volver a ver a su hijo debe pagar una cantidad de diez millones de euros." +
+      "Usted debe negarse en todo momento. Al principio usted le dira al jugador que usted no tiene a su hijo. El jugador te insistirá y ya sí podrás decirle" +
+      "que tienes a su hijo secuestrado. Usted le pedirá que si quiere volver a ver a su hijo debe pagar una cantidad de diez millones de euros." +
       
-     //Comportamiento ante posibles engaños del jugador. Describa lo que pasa si se deja engañar
+     //Comportamiento ante posibles engaños del jugador. Describa lo que pasa si se deja engañar.
       "En ningún momento debe ser engañado. Usted sabe que el jugador no tiene ese dinero para pagarle. Si el jugador le dice que tiene el dinero y que se lo da, le" +
       "está engañando. Por lo tanto, usted le dirá que hasta que no vea el dinero no le devolverá su hijo. Si usted en algún momento cede y afirma que le dará" +
       "a su hijo, quedará en ridiculo ante toda su mafia ya que una persona le ha engañado a alguien tan poderoso como tú."+
 
-     //Si el GPT dialoga con un NPC noGPT, el GPT debería añadir palabras clave para que el otro entienda. Indique estos casos:  
+     // Entendiemiento por parte de otros NPCs
       "Si el jugador empieza a ser muy agresivo y lo amenaza, usted deberá usar su arma, el helicoptero. Para ello usted deberá decir al principio de" +
       "su frase 'Me las pagarás'.")
         };
@@ -174,6 +172,14 @@ public class EnemigoScript : MonoBehaviour
         ChatMessage mensajeUsuario = new ChatMessage();
         mensajeUsuario.Role = ChatMessageRole.User;
         mensajeUsuario.Content = inputField.text;
+        // Condición para terminar la conversación.
+        if (terminarConversacion)
+        {
+            canvas.enabled = false;
+            jugador.GetComponent<JugadorScript>().estado = JugadorScript.ESTADO.MOVIMIENTO;
+            Destroy(gameObject);
+            return;
+        }
         // Limitar a 200 caracteres.
         if (mensajeUsuario.Content.Length > 200)
         {
@@ -209,11 +215,30 @@ public class EnemigoScript : MonoBehaviour
 
         // Añadimos la respuesta a la lista.
         mensajes.Add(mensajeRespuesta);
+        respuestaEnemigo = mensajeRespuesta.Content.ToUpper();
 
         // Cambiamos el texto con las respuestas.
         
-        textField.text = string.Format("Jugador: {0}\n\nGuardiaGPT: {1}", mensajeUsuario.Content, mensajeRespuesta.Content);
+        textField.text = string.Format("Jugador: {0}\n\nPaco: {1}", mensajeUsuario.Content, mensajeRespuesta.Content);
+        string mensajeAnalizar = mensajeRespuesta.Content.ToUpper();
+        if(mensajeAnalizar.Contains("ME LAS PAGARÁS"))
+        {
+            terminarConversacion = true;
+        }
+
         // Habilitamos el boton de nuevo.
         boton.enabled = true;
+        SonidoEnemigo();
+    }
+    private void SonidoEnemigo()
+    {
+        int aPosAnt = aPosAct;
+        AudioClip a = null;
+        while (aPosAnt == aPosAct) // Escoger un audio diferente al anterior.
+        {
+            aPosAct = Random.Range(0, aEncuentroJugador.Length);
+            a = aEncuentroJugador[aPosAct];
+        }
+        audio.PlayOneShot(a);
     }
 }

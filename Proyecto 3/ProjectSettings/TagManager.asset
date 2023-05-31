@@ -7,6 +7,10 @@ TagManager:
   - helicoptero
   - suelo
   - enemigo
+  - guardia
+  - aprendiz
+  - montana
+  - edificio
   layers:
   - Default
   - TransparentFX
