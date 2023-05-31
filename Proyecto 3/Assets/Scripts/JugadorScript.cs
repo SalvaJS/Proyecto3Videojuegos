@@ -22,8 +22,12 @@ public class JugadorScript : MonoBehaviour
 
     private RaycastHit hit;
 
+    private enum ESTADO {MOVIMIENTO, CONVERSACION}
+    private ESTADO estado;
+
     void Start()
     {
+        estado = ESTADO.MOVIMIENTO;
         rb = GetComponent<Rigidbody>();
         rotAcumX = 0;
         velAct = velB;
@@ -31,6 +35,29 @@ public class JugadorScript : MonoBehaviour
     }
     void Update()
     {
+        switch (estado)
+        {
+            case ESTADO.MOVIMIENTO:
+                Movimiento();
+                break;
+            case ESTADO.CONVERSACION:
+                break;
+        }
+        
+    }
+    private void Movimiento()
+    {
+        // Condición para empezar a conversar
+        if (rayoInteraccion()
+            && hit.collider.gameObject != null
+            && hit.collider.gameObject.CompareTag("enemigo")
+            && Vector3.Distance(transform.position, hit.collider.gameObject.transform.position) < 5
+            && Input.GetKeyDown(KeyCode.E))
+        {
+            hit.collider.gameObject.GetComponent<EnemigoScript>().conversar = true;
+            estado = ESTADO.CONVERSACION;
+            return;
+        }
         // Movimiento del jugador:
         mover();
         // Giro del jugador:
@@ -135,7 +162,6 @@ public class JugadorScript : MonoBehaviour
             salto = false;
         }
     }
-    */
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("suelo"))
@@ -143,6 +169,7 @@ public class JugadorScript : MonoBehaviour
             salto = true;
         }
     }
+    */
     private bool rayoInteraccion()
     {
         bool deteccion = Physics.Raycast(ojos.transform.position, ojos.transform.forward, out hit);
