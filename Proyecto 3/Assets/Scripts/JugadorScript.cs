@@ -55,7 +55,7 @@ public class JugadorScript : MonoBehaviour
             && Input.GetKeyDown(KeyCode.E))
         {
             estado = ESTADO.CONVERSACION;
-            hit.collider.gameObject.GetComponent<EnemigoScript>().conversar = true;
+            hit.collider.gameObject.GetComponent<MafiosoScript>().conversar = true;
             PararPersonaje();
             return;
         }

@@ -98,7 +98,7 @@ public class HelicopteroScript : MonoBehaviour
     }
     private void Aterrizado()
     {
-        EnemigoScript sEnemigo = enemigo.GetComponent<EnemigoScript>();
+        MafiosoScript sEnemigo = enemigo.GetComponent<MafiosoScript>();
         if(sEnemigo.respuestaEnemigo.Contains("ME LAS PAGARÁS"))
         {
             estado = Estado.DESPEGAR;
