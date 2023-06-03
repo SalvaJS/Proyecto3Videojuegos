@@ -147,7 +147,7 @@ public class MafiosoScript : MonoBehaviour
 
      // Entendiemiento por parte de otros NPCs
       "Si el jugador empieza a ser muy agresivo y lo amenaza, usted deberá usar su arma, el helicoptero. Para ello usted deberá decir al principio de" +
-      "su frase 'Me las pagarás'.")
+      "su frase 'Me las pagarás'. Esto tienes que hacerlo siempre que te amenace.")
         };
 
 

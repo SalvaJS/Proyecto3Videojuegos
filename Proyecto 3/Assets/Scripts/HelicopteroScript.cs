@@ -42,15 +42,15 @@ public class HelicopteroScript : MonoBehaviour
     public GameObject bala;
     public GameObject canon;
 
-    public GameObject coche;
-
     weka.classifiers.trees.M5P saberPredecirVelocidadBala;
     weka.core.Instances casosEntrenamiento;
-    public bool cercaCoche;
 
     public GameObject jugador;
     public GameObject enemigo;
     public TMP_Text conversación;
+
+    public GameObject heli;
+    private Animation helicesAnimacion;
     void Start()
     {
         estado = Estado.ATERRIZADO;
@@ -73,7 +73,8 @@ public class HelicopteroScript : MonoBehaviour
         saberPredecirVelocidadBala.buildClassifier(casosEntrenamiento);
 
 
-        cercaCoche = false;
+
+        helicesAnimacion = heli.GetComponent<Animation>();
     }
     private void FixedUpdate()
     {
@@ -101,6 +102,7 @@ public class HelicopteroScript : MonoBehaviour
         MafiosoScript sEnemigo = enemigo.GetComponent<MafiosoScript>();
         if(sEnemigo.respuestaEnemigo.Contains("ME LAS PAGARÁS"))
         {
+            helicesAnimacion.Play();
             estado = Estado.DESPEGAR;
         }
     }
@@ -251,7 +253,7 @@ public class HelicopteroScript : MonoBehaviour
         bool obstaculo = false;
         if (Sensores())
         {
-            if (detectSens[0].collider.gameObject != null
+            if (detectSens[0].collider != null
                 && detectSens[0].collider.gameObject.CompareTag("edificio"))
             {
                 obstaculo = true;
@@ -265,7 +267,8 @@ public class HelicopteroScript : MonoBehaviour
         bool obstaculo = false;
         if (Sensores())
         {
-            if (detectSens[0].collider.gameObject.CompareTag("montana"))
+            if (detectSens[0].collider != null
+                    && detectSens[0].collider.gameObject.CompareTag("montana"))
             {
                 obstaculo = true;
             }
@@ -371,7 +374,7 @@ public class HelicopteroScript : MonoBehaviour
     {
         AlcanzarAltura(alturaDeseada, VELVERT);
         AlcanzarPosicion(guia, VELHOR);
-        canon.transform.LookAt(new Vector3(coche.transform.position.x, canon.transform.position.y, coche.transform.position.z));
+        canon.transform.LookAt(new Vector3(jugador.transform.position.x, canon.transform.position.y, jugador.transform.position.z));
     }
     // Método para disparar.
     private void Disparar(float vInitBala)
@@ -385,8 +388,7 @@ public class HelicopteroScript : MonoBehaviour
     }
     private IEnumerator RutinaAtaque()
     {
-        print("RUTINA ATAQUE");
-        print("CERCA COCHE: " + cercaCoche);
+        //print("RUTINA ATAQUE");
         //Esperamos hasta que la variable sea true
         yield return new WaitForSeconds(5);
         //Disparamos una bala cada 3 segundos
@@ -395,8 +397,8 @@ public class HelicopteroScript : MonoBehaviour
             //Creamos el caso de prueba
             Instance casoPrueba = new Instance(casosEntrenamiento.numAttributes());
             casoPrueba.setDataset(casosEntrenamiento);
-            casoPrueba.setValue(0, Vector3.Distance(transform.position, coche.transform.position));
-            casoPrueba.setValue(1, coche.GetComponent<Rigidbody>().velocity.magnitude);
+            casoPrueba.setValue(0, Vector3.Distance(transform.position, jugador.transform.position));
+            casoPrueba.setValue(1, jugador.GetComponent<Rigidbody>().velocity.magnitude);
             //El algoritmo M5P predice la velocidad inicial de la bala
             float mejorVelocidad = (float)saberPredecirVelocidadBala.classifyInstance(casoPrueba); 
             //Utilizamos el método Disparar() para disparar la bala.
