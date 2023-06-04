@@ -51,6 +51,12 @@ public class HelicopteroScript : MonoBehaviour
 
     public GameObject heli;
     private Animation helicesAnimacion;
+
+    private AudioSource audio;
+
+    public GameObject focoHelicoptero;
+    public GameObject bombillaFocoHelicoptero;
+    public Material FocoHelicopteroEncendida;
     void Start()
     {
         estado = Estado.ATERRIZADO;
@@ -75,6 +81,8 @@ public class HelicopteroScript : MonoBehaviour
 
 
         helicesAnimacion = heli.GetComponent<Animation>();
+
+        audio = GetComponent<AudioSource>();
     }
     private void FixedUpdate()
     {
@@ -103,14 +111,18 @@ public class HelicopteroScript : MonoBehaviour
         if(sEnemigo.respuestaEnemigo.Contains("ME LAS PAGARÁS"))
         {
             helicesAnimacion.Play();
+            audio.Play();
+            focoHelicoptero.GetComponent<Light>().enabled = true;
+            bombillaFocoHelicoptero.GetComponent<Renderer>().material = FocoHelicopteroEncendida;
             estado = Estado.DESPEGAR;
         }
     }
     private void Despegar()
     {
         AlcanzarAltura(ALTURABASE, VELVERT);
+        ConfiguracionFocoHelicoptero();
         if (transform.position.y >= alturaDeseada - 1
-            && Vector3.Distance(new Vector3(transform.position.x, jugador.transform.position.y, transform.position.z), jugador.transform.position) > 10)
+            && Vector3.Distance(new Vector3(transform.position.x, jugador.transform.position.y, transform.position.z), jugador.transform.position) > 20)
         {
             estado = Estado.ATACAR;
             StartCoroutine("RutinaAtaque");
@@ -138,18 +150,19 @@ public class HelicopteroScript : MonoBehaviour
     {
         bool d1 = Physics.Raycast(transform.position - transform.up * 0.5f, -Vector3.up, out detectSens[0]);
         UnityEngine.Debug.DrawRay(transform.position - transform.up * 0.5f, -Vector3.up * 10, Color.red);
-        bool d2 = Physics.Raycast(transform.position + transform.forward * 2.5f, new Vector3(transform.forward.x, 0, transform.forward.z), out detectSens[1]);
-        UnityEngine.Debug.DrawRay(transform.position + transform.forward * 2.5f, new Vector3(transform.forward.x, 0, transform.forward.z) * 10, Color.red);
-        bool d3 = Physics.Raycast(transform.position + transform.right * 2f, new Vector3(transform.right.x, 0, transform.right.z), out detectSens[2]);
-        UnityEngine.Debug.DrawRay(transform.position + transform.right * 2f, new Vector3(transform.right.x, 0, transform.right.z) * 10, Color.red);
-        bool d4 = Physics.Raycast(transform.position - transform.forward * 4.5f, -new Vector3(transform.forward.x, 0, transform.forward.z), out detectSens[3]);
-        UnityEngine.Debug.DrawRay(transform.position - transform.forward * 4.5f, -new Vector3(transform.forward.x, 0, transform.forward.z) * 10, Color.red);
-        bool d5 = Physics.Raycast(transform.position - transform.right * 2f, -new Vector3(transform.right.x, 0, transform.right.z), out detectSens[4]);
-        UnityEngine.Debug.DrawRay(transform.position - transform.right * 2f, -new Vector3(transform.right.x, 0, transform.right.z) * 10, Color.red);
+        bool d2 = Physics.Raycast(transform.position + transform.forward * 6f, new Vector3(transform.forward.x, 0, transform.forward.z), out detectSens[1]);
+        UnityEngine.Debug.DrawRay(transform.position + transform.forward * 6f, new Vector3(transform.forward.x, 0, transform.forward.z) * 10, Color.red);
+        bool d3 = Physics.Raycast(transform.position + transform.right * 6f, new Vector3(transform.right.x, 0, transform.right.z), out detectSens[2]);
+        UnityEngine.Debug.DrawRay(transform.position + transform.right * 6f, new Vector3(transform.right.x, 0, transform.right.z) * 10, Color.red);
+        bool d4 = Physics.Raycast(transform.position - transform.forward * 9f, -new Vector3(transform.forward.x, 0, transform.forward.z), out detectSens[3]);
+        UnityEngine.Debug.DrawRay(transform.position - transform.forward * 9f, -new Vector3(transform.forward.x, 0, transform.forward.z) * 10, Color.red);
+        bool d5 = Physics.Raycast(transform.position - transform.right * 6f, -new Vector3(transform.right.x, 0, transform.right.z), out detectSens[4]);
+        UnityEngine.Debug.DrawRay(transform.position - transform.right * 6f, -new Vector3(transform.right.x, 0, transform.right.z) * 10, Color.red);
         return d1 || d2 || d3 || d4 || d5;
     }
     private void SeguirGuia()
     {
+        ConfiguracionFocoHelicoptero();
         if (ObstaculoLateralDetectado())
         {
             //print("EDIFICIO DETECTADO.");
@@ -198,6 +211,7 @@ public class HelicopteroScript : MonoBehaviour
     }
     private void Esquivar()
     {
+        ConfiguracionFocoHelicoptero();
         // Si dejamos de detectar el obstáculo lateral, significa que estamos a más altura. Por lo tanto, cambiamos a SEGUIRGUIA.
         if (!ObstaculoLateralDetectado())
         {
@@ -384,6 +398,7 @@ public class HelicopteroScript : MonoBehaviour
         float masaBala = rbBala.mass;
         float fuerza = masaBala * vInitBala;
         rbBala.AddForce(canon.transform.forward * fuerza, ForceMode.Impulse);
+        canon.GetComponent<AudioSource>().Play();
         Destroy(balaLanzada,5f); 
     }
     private IEnumerator RutinaAtaque()
@@ -405,5 +420,10 @@ public class HelicopteroScript : MonoBehaviour
             Disparar(mejorVelocidad);
             yield return new WaitForSeconds(3f);
         }
+    }
+    private void ConfiguracionFocoHelicoptero()
+    {
+        focoHelicoptero.transform.LookAt(jugador.transform.position);
+        focoHelicoptero.GetComponent<Light>().range = Vector3.Distance(focoHelicoptero.transform.position, jugador.transform.position) + 2;
     }
 }

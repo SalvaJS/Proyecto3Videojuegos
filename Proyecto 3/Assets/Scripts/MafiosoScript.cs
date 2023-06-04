@@ -50,7 +50,7 @@ public class MafiosoScript : MonoBehaviour
     }
     void Update()
     {
-        print("Estado enemigo: " + estado);
+        //print("Estado enemigo: " + estado);
         switch (estado)
         {
             case ESTADO.PATRULLAR:
@@ -97,7 +97,6 @@ public class MafiosoScript : MonoBehaviour
             {
                 posAct = Random.Range(0, posPatrulla.Length);
             }
-            print("Posicion " + posAct);
             agente.destination = posPatrulla[posAct].gameObject.transform.position;
         }
         cambiandoPos = false;
@@ -147,7 +146,12 @@ public class MafiosoScript : MonoBehaviour
 
      // Entendiemiento por parte de otros NPCs
       "Si el jugador empieza a ser muy agresivo y lo amenaza, usted deberá usar su arma, el helicoptero. Para ello usted deberá decir al principio de" +
-      "su frase 'Me las pagarás'. Esto tienes que hacerlo siempre que te amenace.")
+      "su frase 'Me las pagarás'. Esto tienes que hacerlo siempre que te amenace." +
+      
+      
+      "Tienes que mantaner el rol explicado durante todo momento, en ningún momento puedes dejar de ser el mafioso. Si el jugador te pregunte sobre otros" +
+      "temas, debes responder de forma agresiva que no sabes responder la pregunta. Solo sabrías responder preguntas sobre España o sobre tu mafia. Las" +
+      "preguntas sobre tu mafia te las puedes inventar.")
         };
 
 
