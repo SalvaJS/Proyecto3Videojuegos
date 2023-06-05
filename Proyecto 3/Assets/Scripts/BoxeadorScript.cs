@@ -11,7 +11,7 @@ public class BoxeadorScript : MonoBehaviour
     }
     public void CambiarEstilo()
     {
-        print("Entra en función");
+        //print("Entra en función");
         animator.SetInteger("tipo", Random.Range(0, 5));
     }
 }
